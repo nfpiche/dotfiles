@@ -1,32 +1,26 @@
 " Plugins
 call plug#begin('~/.vim/plugged')
   " NTH plugins
-  Plug 'ctrlpvim/ctrlp.vim'
-  Plug 'tpope/vim-fugitive'
-  Plug 'scrooloose/nerdtree'
-  Plug 'tpope/vim-abolish'
-  Plug 'mhartington/oceanic-next'
-  Plug 'w0rp/ale'
-  Plug 'scrooloose/nerdcommenter'
-  Plug 'ntpeters/vim-better-whitespace'
-  Plug 'itchyny/lightline.vim'
-  Plug 'drewtempelmeyer/palenight.vim'
+  Plug 'ambv/black'
   Plug 'arcticicestudio/nord-vim'
+  Plug 'christoomey/vim-system-copy'
+  Plug 'ctrlpvim/ctrlp.vim'
+  Plug 'itchyny/lightline.vim'
+  Plug 'ntpeters/vim-better-whitespace'
+  Plug 'pseewald/vim-anyfold'
+  Plug 'ryanoasis/vim-devicons'
+  Plug 'scrooloose/nerdcommenter'
+  Plug 'scrooloose/nerdtree'
+  Plug 'tpope/vim-fugitive'
   Plug 'Valloric/YouCompleteMe'
+  Plug 'w0rp/ale'
+  Plug 'wakatime/vim-wakatime'
 
   " Language plugins
-  Plug 'ElmCast/elm-vim'
-  Plug 'prettier/vim-prettier'
-  Plug 'vim-ruby/vim-ruby'
+  Plug 'chemzqm/vim-jsx-improve'
   Plug 'pangloss/vim-javascript'
-  Plug 'mxw/vim-jsx'
+  Plug 'prettier/vim-prettier'
 call plug#end()
-
-" Functions
-function SwitchBuffer()
-  b#
-endfunction
-
 
 if &term =~ '256color'
     " disable Background Color Erase (BCE) so that color schemes
@@ -34,40 +28,57 @@ if &term =~ '256color'
     " see also http://snk.tuxfamily.org/log/vim-256color-bce.html
     set t_ut=
 endif
-set background=dark
 colorscheme nord
 
-syntax enable
-set nocompatible
-set number
-set hlsearch
-set expandtab
-set tabstop=2
-set shiftwidth=2
-set softtabstop=2
-set smarttab
-set noswapfile
-set laststatus=2
-set lazyredraw
-set backspace=2
-set autoread
-autocmd filetype crontab setlocal nobackup nowritebackup
 filetype plugin indent on
+syntax enable
+
+set autoread
+set expandtab
+set hlsearch
+set lazyredraw
+set nocompatible
+set noswapfile
+set number
+set smarttab
+set undofile
+
+set background=dark
+set backspace=2
+set encoding=UTF-8
+set foldlevel=99
+set guioptions-=e  " Don't use GUI tabline
+set laststatus=2
+set shiftwidth=2
+set showtabline=2  " Show tabline
+set softtabstop=2
+set statusline+=%m%m%m
+set tabstop=2
+set timeoutlen=1000
+set ttimeoutlen=0
+set undodir=~/.vim/undodir
 
 " other plugin settings
 let g:netrw_liststyle=3
 let g:jsx_ext_require=0
-let NERDTreeShowHidden=1
 let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
-let g:elm_format_autosave = 1
-let g:airline_theme='oceanicnext'
+let g:ctrlp_working_path_mode='w'
 let g:NERDTreeNodeDelimiter = "\u00a0"
+let NERDTreeShowHidden=1
+let &t_SI = "\033[5 q"
+let &t_EI = "\033[1 q"
 
+" lightline
 let g:lightline = {
   \   'colorscheme': 'nord',
   \   'active': {
   \     'left':[ [ 'mode', 'paste' ],
-  \              [ 'gitbranch', 'readonly', 'filename', 'modified' ]
+  \              [ 'gitbranch', 'relativepath', 'noticeMeSenpai' ]
+  \     ]
+  \   },
+  \   'inactive': {
+  \     'left':[ [ 'mode', 'paste' ],
+  \              [ 'noticeMeSenpai' ]
   \     ]
   \   },
 	\   'component': {
@@ -75,6 +86,7 @@ let g:lightline = {
 	\   },
   \   'component_function': {
   \     'gitbranch': 'fugitive#head',
+  \     'noticeMeSenpai': 'LightlineModified',
   \   }
   \ }
 let g:lightline.separator = {
@@ -88,16 +100,18 @@ let g:lightline.tabline = {
   \   'left': [ ['tabs'] ],
   \   'right': [ ['close'] ]
   \ }
-set showtabline=2  " Show tabline
-set guioptions-=e  " Don't use GUI tabline
+function! LightlineModified ()
+  let modified = &modified ? '!!!!!!!!!!!!!!!!!' : ''
+  return modified
+endfunction
 
 " prettier
- let g:prettier#autoformat = 0
- let g:prettier#config#semi = 'false'
- let g:prettier#config#bracket_spacing = 'true'
- let g:prettier#config#arrow_parens = 'always'
- let g:prettier#config#jsx_bracket_same_line = 'false'
- let g:prettier#config#print_width = 100
+let g:prettier#autoformat = 0
+let g:prettier#config#semi = 'false'
+let g:prettier#config#bracket_spacing = 'true'
+let g:prettier#config#arrow_parens = 'always'
+let g:prettier#config#jsx_bracket_same_line = 'false'
+let g:prettier#config#print_width = 100
 
 " nord
 let g:nord_cursor_line_number_background = 1
@@ -112,22 +126,30 @@ let mapleader=","
 nmap <Leader>n :NERDTreeToggle<CR>
 nmap <Leader>p :CtrlP<CR>
 nmap <Leader>l :ALELint<CR>
-nmap <Leader>lf :ALEFix<CR>
-nmap <Leader>r :Prettier<CR>
+autocmd filetype javascript nmap <Leader>r :Prettier<CR>
+autocmd filetype python nmap <Leader>r :Black<CR>
+autocmd BufNewFile,BufRead *.svelte set syntax=html
+autocmd Filetype * AnyFoldActivate
 nmap <leader>d :YcmCompleter GoTo<CR>
-nmap <leader>r :YcmCompleter GoToReferences<CR>
+nmap <leader>rf :YcmCompleter GoToReferences<CR>
+nmap <leader>db oimport pdb; pdb.set_trace()<Esc>
 
-let &t_SI = "\033[5 q"
-let &t_EI = "\033[1 q"
-set timeoutlen=1000 ttimeoutlen=0
-
+" ALE
+hi ALEError guibg=green ctermbg=green
 let g:ale_lint_on_save = 0
 let g:ale_lint_on_text_change = 'never'
 let g:ale_lint_on_enter = 0
-let g:ale_set_highlights = 0
+let g:ale_set_highlights = 1
 let g:ale_linters_ignore = ['tsserver']
 let g:ale_linters = {
-  \ 'javascript': ['eslint', 'flow']
-  \ }
+  \ 'javascript': ['eslint'],
+  \ 'python': ['flake8']
+  \}
 
-nmap <Tab> :call SwitchBuffer()<CR>
+let g:ale_fixers = {
+  \'python': ['black']
+  \}
+let g:black_skip_string_normalization = 1
+
+autocmd filetype crontab setlocal nobackup nowritebackup
+nmap <Tab> :b#<CR>
