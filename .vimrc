@@ -6,20 +6,31 @@ call plug#begin('~/.vim/plugged')
   Plug 'christoomey/vim-system-copy'
   Plug 'ctrlpvim/ctrlp.vim'
   Plug 'itchyny/lightline.vim'
+  Plug 'neoclide/coc.nvim', {'branch': 'release'}
   Plug 'ntpeters/vim-better-whitespace'
   Plug 'pseewald/vim-anyfold'
   Plug 'ryanoasis/vim-devicons'
   Plug 'scrooloose/nerdcommenter'
   Plug 'scrooloose/nerdtree'
   Plug 'tpope/vim-fugitive'
-  Plug 'Valloric/YouCompleteMe'
   Plug 'w0rp/ale'
   Plug 'wakatime/vim-wakatime'
 
   " Language plugins
+  Plug 'JamshedVesuna/vim-markdown-preview'
+  Plug 'Quramy/tsuquyomi'
+  Plug 'burner/vim-svelte'
   Plug 'chemzqm/vim-jsx-improve'
+  Plug 'elixir-editors/vim-elixir'
+  Plug 'elzr/vim-json'
+  Plug 'fatih/vim-go'
+  Plug 'hdima/python-syntax'
+  Plug 'jdonaldson/vaxe'
+  Plug 'leafgarland/typescript-vim'
   Plug 'pangloss/vim-javascript'
   Plug 'prettier/vim-prettier'
+  Plug 'rust-lang/rust.vim'
+  Plug 'slashmili/alchemist.vim'
 call plug#end()
 
 if &term =~ '256color'
@@ -47,6 +58,7 @@ set background=dark
 set backspace=2
 set encoding=UTF-8
 set foldlevel=99
+set foldmethod=indent
 set guioptions-=e  " Don't use GUI tabline
 set laststatus=2
 set shiftwidth=2
@@ -58,15 +70,20 @@ set timeoutlen=1000
 set ttimeoutlen=0
 set undodir=~/.vim/undodir
 
-" other plugin settings
 let g:netrw_liststyle=3
 let g:jsx_ext_require=0
-let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
-let g:ctrlp_working_path_mode='w'
-let g:NERDTreeNodeDelimiter = "\u00a0"
-let NERDTreeShowHidden=1
 let &t_SI = "\033[5 q"
 let &t_EI = "\033[1 q"
+
+" ctrlp
+if executable('ag')
+  let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+endif
+let g:ctrlp_working_path_mode='w'
+
+" nerdtree
+let g:NERDTreeNodeDelimiter = "\u00a0"
+let NERDTreeShowHidden=1
 
 " lightline
 let g:lightline = {
@@ -107,7 +124,7 @@ endfunction
 
 " prettier
 let g:prettier#autoformat = 0
-let g:prettier#config#semi = 'false'
+let g:prettier#config#semi = 'true'
 let g:prettier#config#bracket_spacing = 'true'
 let g:prettier#config#arrow_parens = 'always'
 let g:prettier#config#jsx_bracket_same_line = 'false'
@@ -126,30 +143,40 @@ let mapleader=","
 nmap <Leader>n :NERDTreeToggle<CR>
 nmap <Leader>p :CtrlP<CR>
 nmap <Leader>l :ALELint<CR>
+nmap <Leader>d <Plug>(coc-definition)
+autocmd filetype go nmap <Leader>d :GoDef<CR>
+autocmd filetype go nmap <Leader>r :GoFmt<CR>
+autocmd filetype go nmap <Leader>t :GoTest<CR>
+nmap <Leader>m :s#_\(\l\)#\u\1#g<CR>
+
 autocmd filetype javascript nmap <Leader>r :Prettier<CR>
+autocmd filetype typescript nmap <Leader>r :Prettier<CR>
+autocmd filetype svelte nmap <Leader>r :Prettier<CR>
 autocmd filetype python nmap <Leader>r :Black<CR>
-autocmd BufNewFile,BufRead *.svelte set syntax=html
+autocmd filetype python nmap <leader>db oimport ipdb; ipdb.set_trace()<Esc>
 autocmd Filetype * AnyFoldActivate
-nmap <leader>d :YcmCompleter GoTo<CR>
-nmap <leader>rf :YcmCompleter GoToReferences<CR>
-nmap <leader>db oimport pdb; pdb.set_trace()<Esc>
 
 " ALE
-hi ALEError guibg=green ctermbg=green
 let g:ale_lint_on_save = 0
 let g:ale_lint_on_text_change = 'never'
 let g:ale_lint_on_enter = 0
 let g:ale_set_highlights = 1
-let g:ale_linters_ignore = ['tsserver']
+let g:ale_linters_ignore = {'typescript': ['tslint', 'tsserver']}
+let g:ale_linter_aliases = {'svelte': ['css', 'javascript']}
 let g:ale_linters = {
   \ 'javascript': ['eslint'],
-  \ 'python': ['flake8']
+  \ 'typescript': ['eslint'],
+  \ 'python': ['flake8'],
+  \ 'svelte': ['eslint'],
   \}
-
 let g:ale_fixers = {
   \'python': ['black']
   \}
 let g:black_skip_string_normalization = 1
+
+let g:go_def_mode='gopls'
+let g:go_info_mode='gopls'
+let vim_markdown_preview_github=1
 
 autocmd filetype crontab setlocal nobackup nowritebackup
 nmap <Tab> :b#<CR>
