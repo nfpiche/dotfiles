@@ -1,36 +1,28 @@
 " Plugins
 call plug#begin('~/.vim/plugged')
   " NTH plugins
-  Plug 'ambv/black'
-  Plug 'arcticicestudio/nord-vim'
   Plug 'christoomey/vim-system-copy'
   Plug 'ctrlpvim/ctrlp.vim'
   Plug 'itchyny/lightline.vim'
   Plug 'neoclide/coc.nvim', {'branch': 'release'}
   Plug 'ntpeters/vim-better-whitespace'
-  Plug 'pseewald/vim-anyfold'
   Plug 'ryanoasis/vim-devicons'
   Plug 'scrooloose/nerdcommenter'
   Plug 'scrooloose/nerdtree'
   Plug 'tpope/vim-fugitive'
   Plug 'w0rp/ale'
-  Plug 'wakatime/vim-wakatime'
+  Plug 'pluralsight/activity-insights-vim'
+  Plug 'joshdick/onedark.vim'
 
   " Language plugins
-  Plug 'JamshedVesuna/vim-markdown-preview'
   Plug 'Quramy/tsuquyomi'
-  Plug 'burner/vim-svelte'
-  Plug 'chemzqm/vim-jsx-improve'
-  Plug 'elixir-editors/vim-elixir'
+  Plug 'maxmellon/vim-jsx-pretty'
+  Plug 'peitalin/vim-jsx-typescript'
   Plug 'elzr/vim-json'
   Plug 'fatih/vim-go'
-  Plug 'hdima/python-syntax'
-  Plug 'jdonaldson/vaxe'
   Plug 'leafgarland/typescript-vim'
   Plug 'pangloss/vim-javascript'
-  Plug 'prettier/vim-prettier'
   Plug 'rust-lang/rust.vim'
-  Plug 'slashmili/alchemist.vim'
 call plug#end()
 
 if &term =~ '256color'
@@ -39,7 +31,7 @@ if &term =~ '256color'
     " see also http://snk.tuxfamily.org/log/vim-256color-bce.html
     set t_ut=
 endif
-colorscheme nord
+colorscheme onedark
 
 filetype plugin indent on
 syntax enable
@@ -69,6 +61,7 @@ set tabstop=2
 set timeoutlen=1000
 set ttimeoutlen=0
 set undodir=~/.vim/undodir
+let g:coc_global_extensions = ['coc-solargraph']
 
 let g:netrw_liststyle=3
 let g:jsx_ext_require=0
@@ -80,6 +73,7 @@ if executable('ag')
   let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
 endif
 let g:ctrlp_working_path_mode='w'
+let g:ctrlp_show_hidden = 1
 
 " nerdtree
 let g:NERDTreeNodeDelimiter = "\u00a0"
@@ -87,7 +81,7 @@ let NERDTreeShowHidden=1
 
 " lightline
 let g:lightline = {
-  \   'colorscheme': 'nord',
+  \   'colorscheme': 'iceberg',
   \   'active': {
   \     'left':[ [ 'mode', 'paste' ],
   \              [ 'gitbranch', 'relativepath', 'noticeMeSenpai' ]
@@ -122,61 +116,69 @@ function! LightlineModified ()
   return modified
 endfunction
 
-" prettier
-let g:prettier#autoformat = 0
-let g:prettier#config#semi = 'true'
-let g:prettier#config#bracket_spacing = 'true'
-let g:prettier#config#arrow_parens = 'always'
-let g:prettier#config#jsx_bracket_same_line = 'false'
-let g:prettier#config#print_width = 100
-
-" nord
-let g:nord_cursor_line_number_background = 1
-hi clear CursorLine
-set cursorline
-augroup CLClear
-  autocmd! ColorScheme * hi clear CursorLine
-augroup END
-
 " Leaders
 let mapleader=","
 nmap <Leader>n :NERDTreeToggle<CR>
 nmap <Leader>p :CtrlP<CR>
 nmap <Leader>l :ALELint<CR>
-nmap <Leader>d <Plug>(coc-definition)
+nmap <Leader>d :call CocAction('jumpDefinition', 'drop')<CR>
+nmap <Leader>h :ALEHover<CR>
+nmap <Leader>r :ALEFix<CR>
+nmap <Leader>m :s#_\(\l\)#\u\1#g<CR>
 autocmd filetype go nmap <Leader>d :GoDef<CR>
 autocmd filetype go nmap <Leader>r :GoFmt<CR>
 autocmd filetype go nmap <Leader>t :GoTest<CR>
-nmap <Leader>m :s#_\(\l\)#\u\1#g<CR>
-
-autocmd filetype javascript nmap <Leader>r :Prettier<CR>
-autocmd filetype typescript nmap <Leader>r :Prettier<CR>
-autocmd filetype svelte nmap <Leader>r :Prettier<CR>
-autocmd filetype python nmap <Leader>r :Black<CR>
-autocmd filetype python nmap <leader>db oimport ipdb; ipdb.set_trace()<Esc>
-autocmd Filetype * AnyFoldActivate
 
 " ALE
+let g:ale_linters_specific = 1
+
 let g:ale_lint_on_save = 0
 let g:ale_lint_on_text_change = 'never'
 let g:ale_lint_on_enter = 0
 let g:ale_set_highlights = 1
-let g:ale_linters_ignore = {'typescript': ['tslint', 'tsserver']}
-let g:ale_linter_aliases = {'svelte': ['css', 'javascript']}
+
+let g:ale_linters_ignore = {'typescript': ['tslint']}
+let g:ale_linter_aliases = {'typescriptreact': ['typescript'], 'javascriptreact': ['javascript']}
+let g:ale_fixer_aliases = {'typescriptreact': ['typescript'], 'javascriptreact': ['javascript']}
+
 let g:ale_linters = {
   \ 'javascript': ['eslint'],
-  \ 'typescript': ['eslint'],
-  \ 'python': ['flake8'],
-  \ 'svelte': ['eslint'],
+  \ 'javascriptreact': ['eslint'],
+  \ 'rust': ['cargo'],
+  \ 'ruby': ['standardrb'],
+  \ 'typescript': ['eslint', 'tsserver'],
+  \ 'typescriptreact': ['eslint', 'tsserver'],
   \}
 let g:ale_fixers = {
-  \'python': ['black']
+  \ 'javascript': ['prettier'],
+  \ 'javascriptreact': ['prettier'],
+  \ 'ruby': ['standardrb'],
+  \ 'rust': ['rustfmt'],
+  \ 'typescript': ['prettier'],
+  \ 'typescriptreact': ['prettier'],
   \}
-let g:black_skip_string_normalization = 1
+
+function! LinterStatus()
+  let l:counts = ale#statusline#Count(bufnr(''))
+
+  let l:all_errors = l:counts.error + l:counts.style_error
+  let l:all_non_errors = l:counts.total - l:all_errors
+
+  return l:counts.total == 0 ? '✨ all good ✨' : printf(
+        \   '😞 %dW %dE',
+        \   all_non_errors,
+        \   all_errors
+        \)
+endfunction
+
+set statusline=
+set statusline+=%m
+set statusline+=\ %f
+set statusline+=%=
+set statusline+=\ %{LinterStatus()}
 
 let g:go_def_mode='gopls'
 let g:go_info_mode='gopls'
-let vim_markdown_preview_github=1
 
 autocmd filetype crontab setlocal nobackup nowritebackup
 nmap <Tab> :b#<CR>
